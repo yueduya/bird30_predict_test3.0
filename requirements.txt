@@ -1,0 +1,31 @@
+# 核心依赖
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# 数据库依赖
+mysql-connector-python==8.2.0
+pymongo==4.6.2
+
+# 深度学习依赖
+torch==2.1.0
+torchvision==0.16.0
+
+# 图像处理依赖
+opencv-python==4.8.1.78
+Pillow==10.1.0
+
+# 其他依赖
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+httpx==0.25.2
+numpy==1.24.4
+pandas==2.0.3
+matplotlib==3.7.3
+
+# 开发依赖
+pytest==7.4.3
+black==23.11.0
+flake8==6.1.0

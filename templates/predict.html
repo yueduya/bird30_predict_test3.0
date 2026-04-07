@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能分类</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static//css//sty.css" rel="stylesheet">
+    <style>
+        :root {
+            --deep-blue: #0a192f;
+            --navy: #172a45;
+            --accent: #64ffda;
+            --text-primary: #ccd6f6;
+        }
+
+        body {
+            background-color: var(--deep-blue);
+            color: var(--text-primary);
+            padding-top: 80px;
+        }
+
+        /* 上传容器 */
+        .upload-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        /* 上传区域 */
+        .upload-section {
+            height: 400px;
+            border: 3px dashed var(--accent);
+            border-radius: 12px;
+            background: var(--navy);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* 模型选择 */
+        .model-select {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--accent);
+            color: var(--text-primary);
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        /* 结果展示区 */
+        .result-section {
+            margin-top: 3rem;
+            border-top: 2px solid var(--accent);
+            padding-top: 2rem;
+        }
+
+        .probability-table {
+            background: var(--navy);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .probability-table th {
+            background: var(--deep-blue) !important;
+            border-bottom: 2px solid var(--accent) !important;
+        }
+
+        .chart-img {
+            width: 100%;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            place-items: center;
+            z-index: 999;
+        }
+
+
+
+<!--        结果表展示详细-->
+        .species-link {
+            color: var(--accent) !important;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .species-link:hover {
+            color: #7dffdf !important;
+            text-decoration: underline;
+        }
+
+        .species-link::after {
+            content: "🔍";
+            margin-left: 5px;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .upload-alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4444;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .upload-alert button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+
+        /* 图片容器样式 */
+        .image-container {
+            max-width: 600px;
+            max-height: 400px;
+            margin: 1rem auto;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        /* 图片容器 */
+        .image-container {
+            max-width: 600px;
+            max-height: 400px;
+            margin: 1rem auto;
+            display: flex;          /* 新增 */
+            align-items: center;    /* 新增 */
+            justify-content: center;/* 新增 */
+            background: var(--navy);/* 新增背景色 */
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* 预览图片 */
+        .preview-image {
+            max-width: 100%;        /* 修改为 max-width */
+            max-height: 100%;       /* 修改为 max-height */
+            object-fit: contain;    /* 关键修改 */
+            transition: transform 0.3s;
+            cursor: zoom-in;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link " href="index">浏览</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="search">查询</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('predict_page') }}">识别</a><!--    {{ url_for('detail', group='东黄鸲鹟', photo='Cardinal_0001_17057') }}-->
+
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 居中Logo -->
+            <span class="navbar-brand-center" >
+                <img src="static/images/book.svg" alt="鸟类知识" class="logo">
+                <span>欢迎回来</span>
+            </span>
+
+            <div class="d-flex"></div> <!-- 右侧占位 -->
+        </div>
+    </nav>
+
+    <!-- 加载提示 -->
+    <div class="loading-overlay">
+        <div class="spinner-border text-accent" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="container upload-container">
+        <div class="row g-4">
+            <!-- 上传区 -->
+            <div class="col-md-8">
+                <div class="image-container aspect-ratio upload-section" id="dropZone">
+                    <div class="upload-prompt text-center">
+                        <h4>拖放图片或点击上传</h4>
+                        <p>支持格式：JPG/PNG/WebP/JPEG</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="#" alt="预览" class="preview-image" id="preview">
+                        <div class="image-size-badge" id="sizeBadge"></div>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" hidden accept="image/jpeg, image/png, image/webp, .jpg, .jpeg">
+            </div>
+
+            <!-- 控制区 -->
+            <div class="col-md-4">
+                <select class="model-select mb-4">
+                    <option value="Resnet18_CBAM">Resnet18_CBAM</option>
+                    <option value="Resnet18">ResNet18</option>
+                    <option value="vgg16">vgg16</option>
+                </select>
+                <button class="btn w-100 predict-btn" id="predictBtn" style="color: var(--accent);"  disabled>
+                    开始分析
+                </button>
+<!--                <div class="model-desc mt-3" style="color: var(&#45;&#45;accent);">-->
+<!--                    <small id="modelInfo">选择模型查看详细信息</small>-->
+<!--                </div>-->
+            </div>
+        </div>
+
+        <!-- 结果展示 -->
+        <div class="result-section" id="resultSection" style="display: none;">
+
+            <h3 class="mb-4" style="color: var(--accent);" id="result_top">分析结果：</h3>
+            <h2 id="topClassName" class="mb-4" style="color:#00ff00" ></h2>
+
+            <!-- 参考图片 -->
+            <div class="reference-section mt-5">
+                <h4 class="mb-4" style="color: var(--accent);">同类物种参考</h4>
+                <div class="reference-grid" id="referenceGrid"></div>
+            </div>
+
+            <!-- 概率图表 -->
+            <img class="chart-img" id="probabilityChart" alt="概率分布图">
+
+
+
+
+            <!-- 概率表格 -->
+            <div class="probability-table">
+                <table class="table">
+                    <thead>
+                        <tr >
+                            <th style="color: var(--accent);">排名</th>
+                            <th style="color: var(--accent);">物种名称</th>
+                            <th style="color: var(--accent);">置信度</th>
+                            <th style="color: var(--accent);">详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="probabilityTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 元素引用
+        const fileInput = document.getElementById('fileInput');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultSection = document.getElementById('resultSection');
+        const loadingOverlay = document.querySelector('.loading-overlay');
+
+
+
+        // 初始化事件监听
+        fileInput.addEventListener('change', handleFileSelect);
+        predictBtn.addEventListener('click', processPrediction);
+
+        async function handleFileSelect(e) {
+             const file = e.target.files[0];
+            if (file ) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.querySelector('.upload-prompt').style.display = 'none';
+                    predictBtn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                alert('请选择有效的图片文件 (JPG/PNG/WebP/JPEG)');
+            }
+        }
+
+        async function processPrediction() {
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('model', document.querySelector('.model-select').value);
+
+            try {
+                const file = fileInput.files[0];
+                if (!file) throw new Error('请选择文件');
+
+                // 前端预验证扩展名
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    throw new Error('仅支持JPEG/PNG/WebP格式');
+                }
+
+
+                showLoading(true);
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('请求失败');
+
+                const result = await response.json();
+
+                if(result.success) {
+                    updateResults(result.data);
+                    resultSection.style.display = 'block';
+                } else {
+                    throw new Error(result.error || '未知错误');
+                }
+            } catch(error) {
+                alert(`分析失败: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+
+        function showErrorAlert(message) {
+            const alertBox = document.createElement('div');
+            alertBox.className = 'upload-alert';
+            alertBox.innerHTML = `
+                <span>⚠️ ${message}</span>
+                <button onclick="this.parentElement.remove()">×</button>
+            `;
+            document.body.prepend(alertBox);
+        }
+
+        function updateResults(data) {
+            //更新图片
+            // 显示结果区域
+            document.getElementById('preview').style.display = 'block';
+
+            // 更新处理后的图片
+            if(data.framed_image) {
+                const resultImg = document.getElementById('preview');
+                if(resultImg) {
+                    resultImg.src = data.framed_image;
+                } else {
+                    console.error('错误：找不到结果展示元素');
+                }
+            }
+            //显示第一名
+            const topClass = data.predictions[0].Class;
+            document.getElementById('topClassName').textContent = topClass;
+
+            // 更新概率表
+            const chartImg = document.getElementById('probabilityChart');
+            chartImg.src = 'data:image/png;base64,' + data.chart;
+
+            const tableBody = document.getElementById('probabilityTable');
+
+            tableBody.innerHTML = data.predictions.map((item, index) => `
+
+
+
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.Class}</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar"
+                                 style="width: ${item['Confidence(%)']}%; background: var(--accent); color:#000000;">
+                                ${item['Confidence(%)']}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="/detail/${item.group}/${item.default_photo}"
+                           class="species-link"
+                           target="_blank">
+                            详情
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+
+            // 更新图表
+            document.getElementById('probabilityChart').src = data.chart;
+
+            // 更新参考图片
+            const referenceGrid = document.getElementById('referenceGrid');
+            referenceGrid.innerHTML = data.reference_images.map(img => `
+                <div class="reference-item">
+                    <img src="${img.path}" class="img-fluid" alt="参考图片">
+                    <div class="text-center mt-2">${img.path.split('/').pop()}</div>
+                </div>
+            `).join('');
+        }
+
+        function showLoading(show) {
+            loadingOverlay.style.display = show ? 'grid' : 'none';
+            predictBtn.disabled = show;
+        }
+
+        // 新增拖拽事件处理
+        const dropZone = document.getElementById('dropZone');
+
+        // 拖拽高亮效果
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#64ffda';
+            dropZone.style.background = 'rgba(100, 255, 218, 0.1)';
+        });
+
+        // 移除拖拽效果
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#64ffda';
+            dropZone.style.background = 'var(--navy)';
+        });
+
+        // 处理文件放置
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: fileInput }); // 手动触发处理函数
+            }
+        });
+
+        // 点击触发文件选择
+        dropZone.addEventListener('click', () => fileInput.click());
+
+
+
+        // 修改后的handleImagePreview函数
+        function handleImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('preview');
+                const sizeBadge = document.getElementById('sizeBadge');
+
+                // 仅显示尺寸信息，不设置具体宽高
+                sizeBadge.textContent = `${file.width}×${file.height} (${formatFileSize(file.size)})`;
+
+                img.src = e.target.result;
+                document.querySelector('.upload-prompt').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 文件大小格式化
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+
+    </script>
+
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AI 悬浮窗 -->
+    <link rel="stylesheet" href="/static/css/chat-float.css">
+    <script src="/static/js/chat-float.js"></script>
+</body>
+</html>

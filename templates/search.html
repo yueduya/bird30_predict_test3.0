@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查询</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static//css//sty.css" rel="stylesheet">
+
+
+<!--    补全       -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function () {
+            const availableTags = ["乌鸦", "绒啄木鸟", "黑喉麻雀", "白头海雕","红肩鵟", "红头潜鸭", "雪鸮", "白颈渡鸦","白耳蜂鸟","游隼","丽鹰雕","长耳鸮","绿翅鸭"
+            ,"爪哇禾雀","仓鸮","琉辉蜂鸟","东黄鸲鹟","红尾鵟","美洲红鹳","东方角鸮","日本歌鸲","凤头蛇雕","角雕","棕顶雀鹀","船鸭","瘤鸭","林鸳鸯","吉拉啄木鸟","金雕","斑胸树鸭"];
+
+            $("#searchInput").autocomplete({
+                source: availableTags
+            });
+        });
+    </script>
+
+
+
+
+    <style>
+
+    /* 自定义导航栏样式 */
+        .navbar-custom {
+            background-color: var(--navy) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+            font-size: 1.1rem;
+            position: relative;
+            margin: 0 1rem;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2px;
+            background: var(--accent);
+        }
+
+
+        /* 继承主题变量 */
+        :root {
+            --deep-blue: #0a192f;
+            --navy: #172a45;
+            --accent: #64ffda;
+            --text-primary: #ccd6f6;
+        }
+
+        body {
+            background-color: var(--deep-blue);
+            color: var(--text-primary);
+            padding-top: 80px; /* 为固定导航栏留出空间 */
+        }
+
+        /* 搜索容器样式 */
+        .search-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--navy);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .search-input {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--accent);
+            color: var(--text-primary) !important;
+            padding: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 15px rgba(100,255,218,0.3);
+            border-color: var(--accent);
+        }
+
+        .search-btn {
+            background: var(--accent);
+            color: var(--deep-blue) !important;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        /* 结果展示区 */
+        .results-container {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: var(--navy);
+            border-radius: 12px;
+        }
+
+        .result-item {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: var(--deep-blue);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .result-item:hover {
+            transform: translateX(10px);
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
+        }
+
+
+
+
+
+
+
+
+
+<!--    详细页面的样式    -->
+        /* 主内容区样式 */
+        .main-content {
+            padding: 4rem 2rem;
+        }
+
+        /* 左侧图片容器 */
+        .feature-image {
+            height: 500px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border: 2px solid var(--accent);
+        }
+
+        /* 右侧文案区域 */
+        .content-section {
+            padding-left: 3rem;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 4px rgba(100,255,218,0.2);
+        }
+
+        /* 关联图片网格 */
+        .grid-section {
+            margin-top: 4rem;
+            border-top: 1px solid var(--accent);
+            padding-top: 3rem;
+        }
+
+        .grid-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .grid-item img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .grid-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .grid-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .preserve-newline {
+        white-space: pre-wrap; /* 保留换行符和空格，自动换行 */
+        /* 或 white-space: pre-line; 保留换行符，合并空格 */
+      }
+
+    </style>
+    <link href=r"static//css//sty.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link " href="index">浏览</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="search">查询</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('predict_page') }}">识别</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 居中Logo -->
+            <span class="navbar-brand-center" >
+                <img src="static/images/book.svg" alt="鸟类知识" class="logo">
+                <span>欢迎回来</span>
+            </span>
+
+            <div class="d-flex"></div> <!-- 右侧占位 -->
+        </div>
+    </nav>
+
+    <!-- 搜索区域 -->
+    <div class="container">
+        <form id="searchForm"  class="search-container">
+            <div class="input-group">
+                <input type="text"
+                       id="searchInput"
+                       class="form-control search-input"
+                       name="folder"
+                       placeholder="输入要查询的鸟类名称..."
+                       ><!--       空白时点击显示列表             list="birdSuggestions"-->
+
+<!--                <datalist id="birdSuggestions">-->
+<!--                  <option value="乌鸦"><option value="绒啄木鸟"><option value="黑喉麻雀"><option value="白头海雕">-->
+<!--                    <option value="红肩鵟"><option value="红头潜鸭"><option value="雪鸮"><option value="绿翅鸭">-->
+<!--                    <option value="白耳蜂鸟"><option value="游隼"><option value="丽鹰雕"><option value="长耳鸮">-->
+<!--                    <option value="爪哇禾雀"><option value="仓鸮"><option value="琉辉蜂鸟"><option value="东黄鸲鹟">-->
+<!--                    <option value="红尾鵟"><option value="美洲红鹳"><option value="东方角鸮"><option value="日本歌鸲">-->
+<!--                    <option value="凤头蛇雕"><option value="角雕"><option value="棕顶雀鹀"><option value="船鸭">-->
+<!--                    <option value="瘤鸭"><option value="林鸳鸯"><option value="吉拉啄木鸟"><option value="金雕">-->
+<!--                    <option value="斑胸树鸭"><option value="家麻雀">-->
+
+
+<!--                </datalist>-->
+                <button class="btn search-btn" type="submit">
+                    搜索
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="container-fluid mt-5 pt-5" >
+
+
+
+
+
+
+
+        <div id="imageContainer" class="container main-content">
+                <div class="grid-section">
+
+                    <div id="resultsArea" class="row g-4" >
+                        {% if default_images %}
+                            <h1 class="folder-title" style="color:#00ff00" >{{ default_folder }}</h1>
+                            <!-- 上部：图片+文案 -->
+                            <div class="row align-items-center mb-5">
+                                <!-- 左侧图片 -->
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <img src="/static/images/{{ default_folder }}/{{ photo }}" class="w-100 feature-image" alt="图片">
+                                </div>
+
+                                <!-- 右侧文字 -->
+                                <div class="col-md-6 content-section">
+<!--                                    <h1>'group'<br><em>{{ default_folder }}</em></h1>-->
+                                    <h5 class="text-muted" style="color: var(--accent)!important; line-height: 1.8;">
+
+                                        <pre class="preserve-newline">{{txt_content}}</pre>
+                                    </h5>
+                                </div>
+                            </div>
+                            <h3 class="mb-4" style="color: var(--accent);">更多图片</h3>
+                            <div class="gallery">
+                                {% for img in default_images %}
+                                <span class="col-md-3 col-6  ">
+                                    <span class=" grid-item  ">
+                                        <img  src="{{ img.url }}" alt="{{ img.name }}" loading="lazy" style="width: 200px; margin: 10px;">
+
+                                    </span>
+                                </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="no-result">未找到默认文件夹</div>
+                        {% endif %}
+
+
+                    </div>
+                </div>
+
+        </div>
+
+
+    </div>
+    </main>
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('button');
+
+            try {
+                // 显示加载状态
+                btn.innerHTML = '<span class="spinner"></span> 搜索中...';
+                btn.disabled = true;
+
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('请求失败');
+                const data = await response.json();
+
+                // 更新显示区域
+                const resultsArea = document.getElementById('resultsArea');
+                if (data.exists) {
+                    resultsArea.innerHTML = `
+                        <h1 class="folder-title" style="color:#00ff00">${data.folder}</h1>
+                        <!-- 上部：图片+文案 -->
+                        <div class="row align-items-center mb-5">
+
+                            <!-- 左侧图片 -->
+                            <div class="col-md-6 mb-4 mb-md-0">
+                                  <img src="${data.photo}"
+                         class="w-100 feature-image"
+                         alt="${data.folder}封面图片">
+
+                            </div>
+                            <!-- 右侧文字 -->
+                            <div class="col-md-6 content-section">
+<!--                                <h1>'group'<br><em>${data.folder}</em></h1>-->
+                                <h5 class="text-muted" style="color: var(--accent)!important; line-height: 1.8;">
+                                    <span  class="preserve-newline">${data.txt_content}</span>
+                                </h5>
+                            </div>
+                        </div>
+                        <h3 class="mb-4" style="color: var(--accent);">更多图片</h3>
+                        <div class="gallery">
+                            ${data.images.map(img => `
+                                <span class="image-card col-md-3 col-6 grid-item">
+                                    <img src="${img.url}" alt="${img.name}" loading="lazy" style="width: 200px; margin: 10px;">
+
+                                </span>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultsArea.innerHTML = `
+                        <div class="no-result">
+                            未找到文件夹 "${data.folder}" 或文件夹内无图片
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error(error);
+                resultsArea.innerHTML = `
+                    <div class="no-result">
+                        网络错误，请稍后重试
+                    </div>
+                `;
+            } finally {
+                btn.innerHTML = '搜索文件夹';
+                btn.disabled = false;
+            }
+        });a
+    </script>
+
+
+
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AI 悬浮窗 -->
+    <link rel="stylesheet" href="/static/css/chat-float.css">
+    <script src="/static/js/chat-float.js"></script>
+</body>
+</html>

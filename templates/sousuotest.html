@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文件夹图片搜索</title>
+    <style>
+        .container { max-width: 1200px; margin: 20px auto; }
+        .search-box {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        #searchInput {
+            padding: 12px 20px;
+            width: 400px;
+            border: 2px solid #007bff;
+            border-radius: 25px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 12px 30px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .folder-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 1.5rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+        .image-card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+        .image-card img {
+            width: 100%;
+            height: 340px;
+            object-fit: cover;
+            border-bottom: 2px solid #eee;
+        }
+        .image-name {
+            padding: 1rem;
+            background: white;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .no-result {
+            text-align: center;
+            color: #dc3545;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="searchForm" class="search-box">
+            <input type="text"
+                   id="searchInput"
+                   name="folder"
+                   value="{{ default_folder }}"
+                   placeholder="输入文件夹名称">
+            <button type="submit">搜索文件夹</button>
+        </form>
+
+        <div id="resultsArea">
+            <!-- 默认内容 -->
+            {% if default_images %}
+                <h2 class="folder-title">{{ default_folder }}</h2>
+                <div class="gallery">
+                    {% for img in default_images %}
+                    <div class="image-card">
+                        <img src="{{ img.url }}" alt="{{ img.name }}" loading="lazy">
+                        <div class="image-name">{{ img.name }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-result">未找到默认文件夹</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('button');
+
+            try {
+                // 显示加载状态
+                btn.innerHTML = '<span class="spinner"></span> 搜索中...';
+                btn.disabled = true;
+
+                const response = await fetch('/sousuotest', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('请求失败');
+                const data = await response.json();
+
+                // 更新显示区域
+                const resultsArea = document.getElementById('resultsArea');
+                if (data.exists) {
+                    resultsArea.innerHTML = `
+                        <h2 class="folder-title">${data.folder}</h2>
+                        <div class="gallery">
+                            ${data.images.map(img => `
+                                <div class="image-card">
+                                    <img src="${img.url}" alt="${img.name}" loading="lazy">
+                                    <div class="image-name">${img.name}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultsArea.innerHTML = `
+                        <div class="no-result">
+                            未找到文件夹 "${data.folder}" 或文件夹内无图片
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error(error);
+                resultsArea.innerHTML = `
+                    <div class="no-result">
+                        网络错误，请稍后重试
+                    </div>
+                `;
+            } finally {
+                btn.innerHTML = '搜索文件夹';
+                btn.disabled = false;
+            }
+        });
+    </script>
+    
+    <!-- AI 悬浮窗 -->
+    <link rel="stylesheet" href="/static/css/chat-float.css">
+    <script src="/static/js/chat-float.js"></script>
+</body>
+</html>

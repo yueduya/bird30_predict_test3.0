@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery自动补全示例</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function () {
+            const availableTags = ["苹果", "香蕉", "橙子", "草莓", "葡萄", "芒果", "西瓜","热血换行"];
+
+            $("#111").autocomplete({
+                source: availableTags
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>jQuery自动补全示例</h1>
+    <input type="text" id="111" placeholder="搜索...">
+
+
+
+</body>
+</html>
